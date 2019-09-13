@@ -18,23 +18,53 @@ const getProductsFromFile = cb => {
 };
 
 module.exports = class Product {
-  constructor(title, imageUrl, description, price) {
+  constructor(id, title, imageUrl, description, price) {
+    this.id = id
     this.title = title;
     this.imageUrl = imageUrl;
     this.description = description;
     this.price = price;
   }
 
-  save() {
+  save() {    
     getProductsFromFile(products => {
-      products.push(this);
-      fs.writeFile(p, JSON.stringify(products), err => {
-        console.log(err);
-      });
+      if (this.id) {
+        let existingProductIndex = products.findIndex(prod => prod.id === this.id)
+        let updatedProducts = [...products]
+        updatedProducts[existingProductIndex] = this
+        fs.writeFile(p, JSON.stringify(updatedProducts), err => {
+          console.log(err);
+        });
+      } else {
+        this.id = Math.random().toString();      
+        products.push(this);
+        fs.writeFile(p, JSON.stringify(products), err => {
+          console.log(err);
+        });
+      }
     });
+  }
+  
+  static deleteById(id) {
+    getProductsFromFile(products => {
+      let updatedProducts = products.filter(p => p.id !== id) //this returns all elements as part of new array that matches predicate      
+      fs.writeFile(p, JSON.stringify(updatedProducts), err => {
+        if (!err) {
+          
+        }
+        console.log(err);
+      });      
+    }) 
   }
 
   static fetchAll(cb) {
     getProductsFromFile(cb);
+  }
+
+  static findById(id, cb) {
+    getProductsFromFile(products => {
+      let product = products.find(p => p.id === id)
+      cb(product)
+    }) 
   }
 };
