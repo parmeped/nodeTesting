@@ -66,6 +66,7 @@ exports.postEditProduct = (req, res, next) => {
 
 //there should be no reason not to find the object, since it would always get here through an object id
 exports.deleteProduct = (req, res, next) => {
-  let prodId = req.body.prodId
-  
+  let prodId = req.body.productId
+  Product.deleteById(prodId)
+  res.redirect('/admin/products')
 }
