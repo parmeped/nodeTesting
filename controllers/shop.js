@@ -1,38 +1,40 @@
 const Product = require('../models/product');
 const Cart = require('../models/cart')
-
 exports.getProducts = (req, res, next) => {
-  Product.fetchAll()
-  .then(([rows, fieldData]) => {
+  Product.findAll()
+  .then(products => {
     res.render('shop/product-list', {
-      prods: rows,
+      prods: products,
       pageTitle: 'All Products',
       path: '/products'
-    });  
+    });      
   })
-  .catch((err) => console.log(err))
+  .catch(err => console.log(err))    
 };
 
 exports.getProduct = (req, res, next) => {
   const prodId = req.params.productId;  
-  Product.findById(prodId, product => {    
+  //Product.findAll({where: {id: prodId}}).then().catch() // this returns an array, and it's an alternative to the below
+  Product.findByPk(prodId)
+  .then(product => {    
     res.render('shop/product-detail', {
       product: product,
       pageTitle: 'Product-detail',
       path: '/products/' + prodId
-    });
-  })  
+    });  
+  })
+  .catch(err => console.log(err))    
 };
 
 exports.getIndex = (req, res, next) => {
-  Product.fetchAll()
-  .then(([rows, fieldData]) => {
+  Product.findAll()
+  .then(products => {
     res.render('shop/index', {
-      prods: rows,
+      prods: products,
       pageTitle: 'Shop',
       path: '/'
     });  
-  }) //the parameters are whats received in order
+  })
   .catch(err => console.log(err))  
 };
 
