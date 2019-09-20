@@ -13,13 +13,9 @@ exports.postAddProduct = (req, res, next) => {
   const imageUrl = req.body.imageUrl;
   const price = req.body.price;
   const description = req.body.description;
-  // this is done automatically with Sequelize, and is made through the associations  
-  req.user.createProduct({
-    title: title,
-    price: price,
-    imageUrl: imageUrl,
-    description: description
-  })
+  const product = new Product(title, price, description, imageUrl)
+  product
+  .save()
   .then(result => {
     console.log('Product Created')
     res.redirect('/admin/products')
@@ -28,8 +24,7 @@ exports.postAddProduct = (req, res, next) => {
 };
 
 exports.getProducts = (req, res, next) => {
-  req.user
-  .getProducts()
+  Product.fetchAll()  
   .then(products => {
     res.render('admin/products', {
       prods: products,
@@ -39,7 +34,7 @@ exports.getProducts = (req, res, next) => {
   })
   .catch(err => console.log(err))  
 };
-
+/*
 exports.getEditProduct = (req, res, next) => {
   let editMode = req.query.edit  
   if (!editMode) {
@@ -100,4 +95,4 @@ exports.deleteProduct = (req, res, next) => {
   .catch(err => {
     console.log(err)
   })   
-}
+} */
