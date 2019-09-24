@@ -6,6 +6,8 @@ const bodyParser = require('body-parser');
 const errorController = require('./controllers/error');
 const mongoConnection = require('./util/database').mongoConnection
 
+const User = require('./models/user')
+
 const app = express();
 
 
@@ -30,13 +32,13 @@ db.execute('SELECT * FROM products')
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use((req, res, next) => { // middleWare registered for incoming reqs
-/*     User.findByPk(1)
+    User.findByPk("5d8a61c53f48d336ccc9b243")    
     .then(user => { // first parameter is the returned value from before
-        req.user = user
+        req.user = new User(user.name, user.email, user.cart, user._id) // this stores the user on all requests.         
+        console.log(user)
         next() // continues the execution
     })
-    .catch(err => console.log(err)) */
-    next()
+    .catch(err => console.log(err))    
 })
 
 
@@ -46,6 +48,6 @@ app.use(shopRoutes);
 
 app.use(errorController.get404);
 
-mongoConnection(() => {    
+mongoConnection(() => {        
     app.listen(3000)
 })
