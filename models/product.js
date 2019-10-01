@@ -21,7 +21,7 @@ const productSchema = new Schema({
   },
   userId: {
     type: Schema.Types.ObjectId,
-    ref: 'User', // this is a reference to the User model objectId. this sets up a relation.
+    ref: 'User',
     required: true
   }
 });

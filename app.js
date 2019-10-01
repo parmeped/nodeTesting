@@ -14,6 +14,7 @@ app.set('views', 'views');
 
 const adminRoutes = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
+const authRoutes = require('./routes/auth');
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -29,12 +30,16 @@ app.use((req, res, next) => {
 
 app.use('/admin', adminRoutes);
 app.use(shopRoutes);
+app.use(authRoutes);
 
 app.use(errorController.get404);
 
 mongoose
   .connect(
-    'mongodb://localhost:27017/shop'
+    'mongodb://localhost:27017/shop', {
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+    }
   )
   .then(result => {
     User.findOne()
@@ -53,5 +58,5 @@ mongoose
     app.listen(3000);
   })
   .catch(err => {
-    console.log(err);
+    console.log(err)
   });
