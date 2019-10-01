@@ -1,4 +1,5 @@
 const Product = require('../models/product');
+const Order = require('../models/order')
 
 exports.getProducts = (req, res, next) => {
   Product.find()
@@ -42,14 +43,16 @@ exports.getIndex = (req, res, next) => {
 };
 
 exports.getCart = (req, res, next) => {
-  req.user
-    .getCart()
-    .then(products => {
+  req.user    
+    .populate('cart.items.productId')
+    .execPopulate() //populate does not return a promise, this has to be called after
+    .then(user => {                    
+      let products = user.cart.items
       res.render('shop/cart', {
-        path: '/cart',
-        pageTitle: 'Your Cart',
-        products: products
-      });
+          path: '/cart',
+          pageTitle: 'Your Cart',
+          products: products
+        });        
     })
     .catch(err => console.log(err));
 };
@@ -76,10 +79,31 @@ exports.postCartDeleteProduct = (req, res, next) => {
     .catch(err => console.log(err));
 };
 
-exports.postOrder = (req, res, next) => {
-  let fetchedCart;
-  req.user
-    .addOrder()
+exports.postOrder = (req, res, next) => {  
+  req.user    
+    .populate('cart.items.productId')
+    .execPopulate() //populate does not return a promise, this has to be called after
+    .then(user => {                          
+      let products = user.cart.items.map(i => {        
+        return { 
+          quantity: i.quantity,
+          productData: { ...i.productId._doc }
+        }
+        // who the fuck knows why, but when accessing only i.productId, it doesnt get the whole object. just the id. like this, it does. 
+      })
+      console.log(products)
+      let order = new Order({
+        user: {
+          name: req.user.name,
+          userId: req.user //mongoose fetches the id autmatically
+        },
+        products: products    
+      })
+      return order.save()
+    })  
+    .then(result => {
+      return req.user.clearCart()
+    })
     .then(result => {
       res.redirect('/orders');
     })
@@ -87,14 +111,17 @@ exports.postOrder = (req, res, next) => {
 };
 
 exports.getOrders = (req, res, next) => {
-  req.user
-    .getOrders()
-    .then(orders => {
-      res.render('shop/orders', {
-        path: '/orders',
-        pageTitle: 'Your Orders',
-        orders: orders
-      });
+  Order.find({
+    "user.userId": req.user._id
+  })
+  .then(orders => {    
+    res.render('shop/orders', {
+      path: '/orders',
+      pageTitle: 'Your Orders',
+      orders: orders
     })
-    .catch(err => console.log(err));
-};
+  })
+  .catch(err => console.log(err));
+}
+
+

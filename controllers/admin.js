@@ -77,6 +77,8 @@ exports.postEditProduct = (req, res, next) => {
 
 exports.getProducts = (req, res, next) => {
   Product.find()
+    //.select('title price -_id') //bring only this data, exclude (-) this data
+    //.populate('userId') //this brings all the data related to field
     .then(products => {
       res.render('admin/products', {
         prods: products,

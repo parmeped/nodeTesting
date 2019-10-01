@@ -33,23 +33,26 @@ app.use(shopRoutes);
 app.use(errorController.get404);
 
 mongoose
-  .connect(
-    'mongodb://localhost:27017/shop'
-  )
+  .connect("mongodb://localhost:27017/shop", {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+  })
   .then(result => {
-    User.findOne()
-    .then(user => {
+    User.findOne().then(user => {
       if (!user) {
         const user = new User({
-          name: 'Pedro',
-          email: 'pedro@mail.com',
+          name: "Pedro",
+          email: "pedro@mail.com",
           cart: {
             items: []
           }
-        })
-        user.save()
+        });
+        user.save();
       }
-    })
+    });
+    console.log("------------------------")
+    console.log("----//Starting App//----")
+    console.log("------------------------")
     app.listen(3000);
   })
   .catch(err => {
