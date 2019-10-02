@@ -41,7 +41,10 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use((req, res, next) => {
-  User.findById('5d8bd7c14e8cfc1cc0e65716')
+  if (!req.session.user) {
+    return next()
+  }
+  User.findById(req.session.user._id)
     .then(user => {
       req.user = user
       next();
@@ -62,20 +65,7 @@ mongoose
       useUnifiedTopology: true
     }
   )
-  .then(result => {
-    User.findOne()
-    .then(user => {
-      if (!user) {
-        const user = new User({
-          name: 'Pedro',
-          email: 'pedro@mail.com',
-          cart: {
-            items: []
-          }
-        })
-        user.save()
-      }
-    })
+  .then(result => {   
     appStart()
     app.listen(3000);
   })
