@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 const session = require('express-session')
 const MongoDbStore = require('connect-mongodb-session')(session)
 const MONGODB_URI = 'mongodb://localhost:27017/shop'
+const csrf = require('csurf') // csrf protection. sends a hash token to every render, wich is later sent with every request. 
 
 const errorController = require('./controllers/error');
 const User = require('./models/user');
@@ -15,6 +16,8 @@ const store = new MongoDbStore({
   uri: MONGODB_URI,
   collection: 'sessions' // where should sessions be stored? here you can assign also time to live of sessions
 })
+
+const csrfProtection = csrf()
 
 
 const appStart = () => {
@@ -51,6 +54,14 @@ app.use((req, res, next) => {
     })
     .catch(err => console.log(err));
 });
+
+app.use(csrfProtection)
+
+app.use((req, res, next) => {
+  res.locals.isAuthenticated = req.session.isLoggedIn
+  res.locals.csrfToken = req.csrfToken()
+  next()
+})
 
 app.use('/admin', adminRoutes);
 app.use(shopRoutes);
