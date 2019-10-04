@@ -7,6 +7,8 @@ const session = require('express-session')
 const MongoDbStore = require('connect-mongodb-session')(session)
 const MONGODB_URI = 'mongodb://localhost:27017/shop'
 const csrf = require('csurf') // csrf protection. sends a hash token to every render, wich is later sent with every request. 
+const flash = require('connect-flash')
+
 
 const errorController = require('./controllers/error');
 const User = require('./models/user');
@@ -56,7 +58,7 @@ app.use((req, res, next) => {
 });
 
 app.use(csrfProtection)
-
+app.use(flash())
 app.use((req, res, next) => {
   res.locals.isAuthenticated = req.session.isLoggedIn
   res.locals.csrfToken = req.csrfToken()
