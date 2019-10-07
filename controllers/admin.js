@@ -53,7 +53,9 @@ exports.getEditProduct = (req, res, next) => {
         product: product
       });
     })
-    .catch(err => console.log(err));
+    .catch(
+      res.redirect('/505')
+    ); // here you can resend the page with the error code and keep user input. 
 };
 
 exports.postEditProduct = (req, res, next) => {

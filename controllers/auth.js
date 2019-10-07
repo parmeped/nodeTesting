@@ -1,15 +1,15 @@
-const crypto = require('crypto') // creates random secure values, built in into node
+const crypto = require('crypto') // creates random secure values, built-in into node 
 const User = require('../models/user');
-const bcrypt = require('bcryptjs')
-const nodeMailer = require('nodemailer')
-const sendgridTransport = require('nodemailer-sendgrid-transport')
-const { validationResult } = require('express-validator')
-const mailApi = require('../middleware/mailApi')
+const bcrypt = require('bcryptjs') //dependency
+const nodeMailer = require('nodemailer') //dependency
+const sendgridTransport = require('nodemailer-sendgrid-transport') //dependency
+const { validationResult } = require('express-validator') //dependency
+const config = require('../config') 
 
 
-const transporter = nodeMailer.createTransport(sendgridTransport({
+const transporter = nodeMailer.createTransport(sendgridTransport({  
   auth: {
-    api_key: mailApi // this key binds the program to www.sendgrid.com, through which we send mails
+    api_key: config.MAIL_API // this key binds the program to www.sendgrid.com, through which we send mails
   }
 })) // this is for the email configuration
 
@@ -28,7 +28,12 @@ exports.getLogin = (req, res, next) => {
   res.render('auth/login', {
     path: '/login',
     pageTitle: 'Login',
-    errorMessage: message
+    errorMessage: message,
+    oldInput: {
+      email: '',
+      password: ''
+    },
+    validationErrors: []
   });
 };
 
@@ -57,7 +62,12 @@ exports.postLogin = (req, res, next) => {
     .render('auth/login', {
       path: '/login',
       pageTitle: 'Login',
-      errorMessage: errors.array()[0].msg
+      errorMessage: errors.array()[0].msg,
+      oldInput: {
+        email: email,
+        password: password
+      },
+      validationErrors: errors.array()
     });
   }
 
@@ -66,8 +76,17 @@ exports.postLogin = (req, res, next) => {
   })
     .then(user => {
       if (!user) {
-        req.flash('error', 'Invalid email or password.')
-        return res.redirect('/login')
+        return res.status(422)
+        .render('auth/login', {
+          path: '/login',
+          pageTitle: 'Login',
+          errorMessage: 'Invalid email or password.',
+          oldInput: {
+            email: email,
+            password: password
+          },
+          validationErrors: []
+        });
       }
       bcrypt.compare(password, user.password)
       .then(doMatch => {
@@ -79,8 +98,17 @@ exports.postLogin = (req, res, next) => {
             return res.redirect('/')            
           });
         }
-        req.flash('error', 'Invalid email or password.')
-        res.redirect('login')
+        return res.status(422)
+        .render('auth/login', {
+          path: '/login',
+          pageTitle: 'Login',
+          errorMessage: 'Invalid email or password.',
+          oldInput: {
+            email: email,
+            password: password
+          },
+          validationErrors: []
+        });
       })
       .catch(err => {
         console.log(err)
@@ -125,10 +153,10 @@ exports.postSignup = (req, res, next) => {
   })
   .then(result => {
     res.redirect('/login')
-    console.log("Sending signUp mail to " + email)
+    console.log("Sending signUp mail to " + email)    
     return transporter.sendMail({
       to: email,
-      from: 'hola@amor.com',
+      from: 'shop@testing.com',
       subject: 'PedroTesting',
       html: '<h1>Pedro testeando cosas!</h1>'
     })

@@ -12,7 +12,19 @@ router.get('/login', authController.getLogin);
 
 router.get('/signup', authController.getSignup);
 
-router.post('/login', authController.postLogin);
+router.post('/login', 
+  [
+    body('email')
+    .isEmail()
+    .withMessage('Please enter a valid email address')
+    .normalizeEmail(),
+    body('password', 'Password has to be valid')
+    .isLength({ min: 5 })
+    .isAlphanumeric()
+    .trim() //extra white space remover
+  ],
+  authController.postLogin
+);
 
 router.post(
   "/signup",
@@ -32,14 +44,16 @@ router.post(
             return Promise.reject("Mail exists already, pick another one");
           }
         });
-      }),
-    body("password", "Password invalid!").isLength({ min: 5 }).isAlphanumeric(),
+      })
+      .normalizeEmail(),
+    body("password", "Password invalid!").isLength({ min: 5 }).isAlphanumeric().trim(),
     body("confirmPassword").custom((value, { req }) => {
       if (value !== req.body.password) {
         throw new Error("Passwords have to match!!");
       }
       return true
     })
+    .trim()
   ],
   authController.postSignup
 );
