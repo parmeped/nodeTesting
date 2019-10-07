@@ -4,11 +4,12 @@ const bcrypt = require('bcryptjs')
 const nodeMailer = require('nodemailer')
 const sendgridTransport = require('nodemailer-sendgrid-transport')
 const { validationResult } = require('express-validator')
+const mailApi = require('../middleware/mailApi')
 
 
 const transporter = nodeMailer.createTransport(sendgridTransport({
   auth: {
-    api_key: '' // this key binds the program to www.sendgrid.com, through which we send mails
+    api_key: mailApi // this key binds the program to www.sendgrid.com, through which we send mails
   }
 })) // this is for the email configuration
 
